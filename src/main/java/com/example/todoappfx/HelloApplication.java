@@ -19,7 +19,7 @@ public class HelloApplication extends Application {
 
         displayLoginScreen(primaryStage);
         //hdxtcfvhg
-        //szfhdgxnjgvhk
+        //3rd commit
         //displayTasks(primaryStage);
     }
 
