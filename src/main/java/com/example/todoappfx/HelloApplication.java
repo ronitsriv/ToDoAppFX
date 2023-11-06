@@ -18,10 +18,6 @@ public class HelloApplication extends Application {
         primaryStage.setTitle("To Do List");
 
         displayLoginScreen(primaryStage);
-        //hdxtcfvhg
-        //3rd commit
-        //4th commit
-        //displayTasks(primaryStage);
     }
 
     private void displayLoginScreen(Stage primaryStage){
