@@ -3,25 +3,22 @@ package com.example.todoappfx;
 import java.util.Base64;
 
 public class passwordEncoder {
-    public String encodePassword(String input) {
+    private static String encodePassword(String input) {
         return Base64.getEncoder().encodeToString(input.getBytes());
     }
 
-    public String decodePassword(String encodedInput) {
+    private static String decodePassword(String encodedInput) {
         byte[] decodedBytes = Base64.getDecoder().decode(encodedInput);
         return new String(decodedBytes);
     }
 
-    public static void main(String[] args) {
-        passwordEncoder encoder = new passwordEncoder();
+    public static String callEncode(String input){
+        System.out.println(encodePassword(input));
+        return encodePassword(input);
+    }
 
-        // Encoding a password
-        String password = "helloworld";
-        String encodedPassword = encoder.encodePassword(password);
-        System.out.println("Encoded Password: " + encodedPassword);
-
-        // Decoding a password
-        String decodedPassword = encoder.decodePassword(encodedPassword);
-        System.out.println("Decoded Password: " + decodedPassword);
+    public static String callDecode(String input){
+        System.out.println(decodePassword(input));
+        return decodePassword(input);
     }
 }

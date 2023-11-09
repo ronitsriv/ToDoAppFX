@@ -12,11 +12,15 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 
+import static com.example.todoappfx.passwordEncoder.callDecode;
+import static com.example.todoappfx.passwordEncoder.callEncode;
+
 public class HelloApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("To Do List");
-        displayTasks(primaryStage);
+
+        //displayTasks(primaryStage);
         //displayLoginScreen(primaryStage);
     }
 
@@ -211,6 +215,11 @@ public class HelloApplication extends Application {
     }
 
     public static void main(String[] args) {
-        launch();
+        // Encoding a password
+        String password = "helloworld";
+        System.out.println("Encoded Password: " + passwordEncoder.callEncode(password));
+
+        // Decoding a password
+        System.out.println("Decoded Password: " + passwordEncoder.callDecode(password));
     }
 }
