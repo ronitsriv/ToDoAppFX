@@ -12,9 +12,6 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 
-import static com.example.todoappfx.passwordEncoder.callDecode;
-import static com.example.todoappfx.passwordEncoder.callEncode;
-
 public class HelloApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
@@ -215,11 +212,13 @@ public class HelloApplication extends Application {
     }
 
     public static void main(String[] args) {
-        // Encoding a password
+        // This is how to use encoding and decoding function.
+        //You all don't get to see the actual encoding logic because it's private(technically you can but I can encrypt that file)!
         String password = "helloworld";
+
         System.out.println("Encoded Password: " + passwordEncoder.callEncode(password));
 
-        // Decoding a password
-        System.out.println("Decoded Password: " + passwordEncoder.callDecode(password));
+        System.out.println("Decoded Password: " + passwordEncoder.callDecode(passwordEncoder.callEncode(password)));
+        launch();
     }
 }
