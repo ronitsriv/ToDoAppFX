@@ -9,8 +9,12 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 import java.net.URL;
+import java.sql.Statement;
 
 public class HelloApplication extends Application {
     @Override
@@ -142,7 +146,7 @@ public class HelloApplication extends Application {
 
 
         // Add components to the VBox
-        root.getChildren().addAll(usernameLabel, usernameField, plusButton);
+        root.getChildren().addAll(usernameLabel, plusButton);
 
         // Create the scene and apply styles
         Scene scene = new Scene(root, 600, 400);
@@ -212,13 +216,42 @@ public class HelloApplication extends Application {
     }
 
     public static void main(String[] args) {
-        // This is how to use encoding and decoding function.
-        //You all don't get to see the actual encoding logic because it's private(technically you can but I can encrypt that file)!
-        String password = "helloworld";
+        // Load the MySQL JDBC driver
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            // Handle the exception (e.g., log an error or exit the program)
+            return;
+        }
 
-        System.out.println("Encoded Password: " + passwordEncoder.callEncode(password));
+        // JDBC URL, username, and password of MySQL server
+        String jdbcUrl = "jdbc:mysql://localhost:3306/newschema";
+        String username = "root";
+        String password = "somanysqls";
 
-        System.out.println("Decoded Password: " + passwordEncoder.callDecode(passwordEncoder.callEncode(password)));
-        launch();
+        // Establish a connection
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
+            // Create a Statement object
+            try (Statement statement = connection.createStatement()) {
+                // Define the SQL statement to create a new table
+                String createTableSQL = "CREATE TABLE IF NOT EXISTS new_table ("
+                        + "id INT PRIMARY KEY AUTO_INCREMENT,"
+                        + "name VARCHAR(255) NOT NULL,"
+                        + "age INT"
+                        + ")";
+
+                // Execute the SQL statement to create the table
+                statement.executeUpdate(createTableSQL);
+
+                System.out.println("Table 'new_table' created successfully.");
+            } catch (SQLException e) {
+                e.printStackTrace();
+                // Handle the SQL exception (e.g., log an error or show a message to the user)
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the SQL exception (e.g., log an error or show a message to the user)
+        }
     }
 }
