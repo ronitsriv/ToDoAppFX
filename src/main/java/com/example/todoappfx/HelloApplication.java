@@ -17,7 +17,7 @@ public class HelloApplication extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("To Do List");
 
-        //displayTasks(primaryStage);
+        displayTasks(primaryStage);
         //displayLoginScreen(primaryStage);
     }
 
