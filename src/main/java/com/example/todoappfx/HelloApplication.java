@@ -9,19 +9,18 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+
+import java.sql.*;
 
 import java.net.URL;
-import java.sql.Statement;
 
 public class HelloApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("To Do List");
 
-        displayTasks(primaryStage);
+        //displayTasks(primaryStage);
+        displayEnterTaskScreen(primaryStage);
         //displayLoginScreen(primaryStage);
     }
 
@@ -73,6 +72,16 @@ public class HelloApplication extends Application {
 
     private void displayRegisterScreen(Stage primaryStage) {
         primaryStage.close();
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            // Handle the exception (e.g., log an error or exit the program)
+            return;
+        }
+
+
 
         VBox root = new VBox(7);
         root.setPadding(new Insets(15));
@@ -167,7 +176,12 @@ public class HelloApplication extends Application {
         primaryStage.show();
     }
 
-    private void displayEnterTaskScreen(Stage primaryStage){
+    private void displayEnterTaskScreen(Stage primaryStage) {
+        // JDBC URL, username, and password of MySQL server
+        String jdbcUrl = "jdbc:mysql://localhost:3306/to_do_list_db";
+        String username = "root";
+        String password = "somanysqls";
+
         VBox root = new VBox(10);
         root.setPadding(new Insets(15));
         root.setStyle("-fx-background-color: linear-gradient(to bottom, #8c2626, #d0a02b);");
@@ -176,6 +190,8 @@ public class HelloApplication extends Application {
         TextField titleField = new TextField();
         Label taskDescriptionLabel = new Label("Task Description:");
         TextField taskDescriptionField = new TextField();
+        Label dueDateLabel = new Label("What is the due date of task completion(YYYY-MM-DD):");
+        TextField dueDateField = new TextField();
         Button backButton = new Button("❮");
         Button addTaskButton = new Button("Add Task");
 
@@ -184,74 +200,60 @@ public class HelloApplication extends Application {
         taskDescriptionField.getStyleClass().add("field");
         titleLabel.getStyleClass().add("label");
         taskDescriptionLabel.getStyleClass().add("label");
+        dueDateLabel.getStyleClass().add("label");
+        dueDateField.getStyleClass().add("field");
         backButton.getStyleClass().add("button_blue");
         addTaskButton.getStyleClass().add("button_blue");
 
-
         // Add components to the VBox
-        root.getChildren().addAll(titleLabel, titleField, taskDescriptionLabel, taskDescriptionField, addTaskButton,backButton);
+        root.getChildren().addAll(titleLabel, titleField, taskDescriptionLabel, taskDescriptionField, dueDateLabel, dueDateField, addTaskButton, backButton);
 
         // Create the scene and apply styles
         Scene scene = new Scene(root, 600, 400);
         URL cssFile = getClass().getResource("/com/example/todoappfx/common.css");
         scene.getStylesheets().add(cssFile.toExternalForm());
 
-        backButton.setOnAction(actionEvent -> {
-//            if(data from database is correct){
-//                AlertBox.display("Nice", "Login Successful.");
-//            } else{
-//                AlertBox.display("Sorry!", "Please check username and/or password.");
-//            }
-        });
-
         backButton.setOnAction(actionEvent -> displayTasks(primaryStage));
 
         addTaskButton.setOnAction(actionEvent -> {
-            //Add value to database
-            AlertBox.display("Hurray!","Your task is saved.");
+            // Add value to the database
+            String a = taskDescriptionField.getText();
+            String b = titleField.getText();
+            String c = dueDateField.getText();
+
+            // Establish a connection
+            try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
+                // Create a PreparedStatement
+                String createTableSQL = "INSERT INTO task_details (title, description, date, Completed) VALUES (?, ?, ?, false)";
+                try (PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL)) {
+                    preparedStatement.setString(1, b);
+                    preparedStatement.setString(2, a);
+                    preparedStatement.setString(3, c);
+
+                    preparedStatement.executeUpdate();
+                    System.out.println("Task added successfully.");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    // Handle the SQL exception (e.g., log an error or show a message to the user)
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                // Handle the SQL exception (e.g., log an error or show a message to the user)
+            }
+
+            AlertBox.display("Hurray!", "Your task is saved.");
         });
 
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
+
     public static void main(String[] args) {
         // Load the MySQL JDBC driver
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            // Handle the exception (e.g., log an error or exit the program)
-            return;
-        }
 
-        // JDBC URL, username, and password of MySQL server
-        String jdbcUrl = "jdbc:mysql://localhost:3306/newschema";
-        String username = "root";
-        String password = "somanysqls";
+        launch();
 
-        // Establish a connection
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
-            // Create a Statement object
-            try (Statement statement = connection.createStatement()) {
-                // Define the SQL statement to create a new table
-                String createTableSQL = "CREATE TABLE IF NOT EXISTS new_table ("
-                        + "id INT PRIMARY KEY AUTO_INCREMENT,"
-                        + "name VARCHAR(255) NOT NULL,"
-                        + "age INT"
-                        + ")";
-
-                // Execute the SQL statement to create the table
-                statement.executeUpdate(createTableSQL);
-
-                System.out.println("Table 'new_table' created successfully.");
-            } catch (SQLException e) {
-                e.printStackTrace();
-                // Handle the SQL exception (e.g., log an error or show a message to the user)
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            // Handle the SQL exception (e.g., log an error or show a message to the user)
-        }
     }
+
 }
