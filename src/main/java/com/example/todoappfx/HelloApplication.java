@@ -9,7 +9,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
+// Made this comment to check if committing to the main rep works or not -RJ
 import java.sql.*;
 
 import java.net.URL;
