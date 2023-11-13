@@ -298,7 +298,26 @@ public class HelloApplication extends Application {
             System.out.println("Task Incomplete");
         }
     }
+    private void deleteTask(int TaskID){
+        String jdbcUrl = "jdbc:mysql://localhost:3306/to_do_list_db";
+        String username = "root";
+        String password = "somanysqls";
 
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
+            // Create a PreparedStatement
+            String createTableSQL = "DELETE FROM task_details WHERE taskID = " + TaskID;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL)) {
+                preparedStatement.executeUpdate();
+                System.out.println("Task added successfully.");
+            } catch (SQLException e) {
+                e.printStackTrace();
+                // Handle the SQL exception (e.g., log an error or show a message to the user)
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the SQL exception (e.g., log an error or show a message to the user)
+        }
+    }
     public static void main(String[] args) {
         // Load the MySQL JDBC driver
 
