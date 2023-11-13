@@ -1,9 +1,13 @@
 package com.example.todoappfx;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 // Made this comment to check if committing to the main rep works or not -RJ
@@ -12,6 +16,8 @@ import java.sql.*;
 import java.net.URL;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class HelloApplication extends Application {
@@ -19,10 +25,12 @@ public class HelloApplication extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("To-Do List");
 
-        //displayTasks(primaryStage);
-        displayEnterTaskScreen(primaryStage);
+        displayTasks(primaryStage);
+        //displayEnterTaskScreen(primaryStage);
         //displayLoginScreen(primaryStage);
     }
+
+
 
     private void displayLoginScreen(Stage primaryStage){
         VBox root = new VBox(10);
@@ -134,47 +142,120 @@ public class HelloApplication extends Application {
         primaryStage.show();
     }
 
-    private void displayTasks(Stage primaryStage){
-        VBox root = new VBox(10);
-        root.setPadding(new Insets(15));
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, black, #d0a02b);");
 
-        VBox taskDetailBox = new VBox(5);
-        taskDetailBox.setPadding(new Insets(10));
+    private static List<Tasks> fetchTasksFromDatabase() {
+        List<Tasks> tasksList = new ArrayList<>();
 
-        Label usernameLabel = new Label("Tasks");
-        TextField usernameField = new TextField();
-        Button plusButton = new Button("➕");
+        // JDBC URL, username, and password of MySQL server
+        String jdbcUrl = "jdbc:mysql://localhost:3306/to_do_list_db";
+        String username = "root";
+        String password = "somanysqls";
 
+        // SQL query to select tasks from the database
+        String selectQuery = "SELECT * FROM task_details";
 
-        // Apply styles to UI components
-        usernameField.getStyleClass().add("field");
-        usernameLabel.getStyleClass().add("label");
-        plusButton.getStyleClass().add("button_blue");
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(selectQuery)) {
 
+            while (resultSet.next()) {
+                // Retrieve task details from the result set
+                String title = resultSet.getString("title");
+                String taskDescription = resultSet.getString("description");
+                String date = resultSet.getString("date");
+                String time = resultSet.getString("time");
+                int taskID = resultSet.getInt("taskID");
+                boolean completed = resultSet.getBoolean("Completed");
 
+                // Create a Tasks object and add it to the list
+                Tasks task = new Tasks(title, taskDescription, date, time, taskID, completed);
+                tasksList.add(task);
+            }
 
-        // Add components to the VBox
-        root.getChildren().addAll(usernameLabel, plusButton);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the SQL exception (e.g., log an error or show a message to the user)
+        }
+
+        return tasksList;
+    }
+    private void displayTasks(Stage primaryStage) {
+        // Assuming you have a method to fetch tasks from the database
+        List<Tasks> tasksList = fetchTasksFromDatabase();
+
+        // Convert the list to an observable list
+        ObservableList<Tasks> observableTasks = FXCollections.observableArrayList(tasksList);
+
+        // Create a ListView and set the items
+        ListView<Tasks> listView = new ListView<>(observableTasks);
+
+        // Set a custom cell factory to display tasks as you want
+        listView.setCellFactory(param -> new TaskListCell());
 
         // Create the scene and apply styles
-        Scene scene = new Scene(root, 600, 400);
-        URL cssFile = getClass().getResource("/com/example/todoappfx/common.css");
-        scene.getStylesheets().add(cssFile.toExternalForm());
+        VBox root = new VBox(listView);
+        root.setStyle("-fx-background-color: #FFFFFF;");  // Set your desired background color
 
-        plusButton.setOnAction(actionEvent -> {
-//            if(data from database is correct){
-//                AlertBox.display("Nice", "Login Successful.");
-//            } else{
-//                AlertBox.display("Sorry!", "Please check username and/or password.");
-//            }
-        });
+        // Create a ScrollPane and set its content to the root VBox
+        ScrollPane scrollPane = new ScrollPane(root);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
 
-        plusButton.setOnAction(actionEvent -> displayEnterTaskScreen(primaryStage));
+        // Set the scene content to the ScrollPane
+        primaryStage.setScene(new Scene(scrollPane, 600, 400));
 
-        primaryStage.setScene(scene);
         primaryStage.show();
     }
+
+
+    // Custom cell factory to display tasks in the ListView
+    // Custom cell factory to display tasks in the ListView
+    private static class TaskListCell extends ListCell<Tasks> {
+        @Override
+        protected void updateItem(Tasks task, boolean empty) {
+            super.updateItem(task, empty);
+
+            if (empty || task == null) {
+                setText(null);
+                setGraphic(null);
+            } else {
+                // Create UI components
+                CheckBox checkBox = new CheckBox("Completed");
+                Button deleteButton = new Button("➖");
+
+                // Customize how each task is displayed in the ListView
+                Label detailsLabel = new Label(
+                        "Title: " + task.getTitle() +
+                                "\nDescription: " + task.getTask_description() +
+                                "\nDate: " + task.getDate() +
+                                "\nTime: " + task.getTime()
+                );
+
+                // Set actions for the checkbox and delete button
+                checkBox.setSelected(task.isCompleted());
+                checkBox.setOnAction(event -> completedOrNot(task.getTaskID(), checkBox));
+
+                deleteButton.setOnAction(event -> {
+                    // Assuming you have a deleteTask method to remove the task from the database
+                    deleteTask(task.getTaskID());
+                    // Assuming you have a method to fetch updated tasks from the database
+                    List<Tasks> updatedTasks = fetchTasksFromDatabase();
+                    // Convert the updated list to observable list
+                    ObservableList<Tasks> updatedObservableTasks = FXCollections.observableArrayList(updatedTasks);
+                    // Update the ListView items
+                    ((ListView<Tasks>) getListView()).setItems(updatedObservableTasks);
+                });
+
+                // Add UI components to the cell in an HBox
+                HBox hbox = new HBox(10, detailsLabel, checkBox, deleteButton);
+                setGraphic(hbox);
+            }
+        }
+    }
+
+
+
+
 
     private void displayEnterTaskScreen(Stage primaryStage) {
         // JDBC URL, username, and password of MySQL server
@@ -315,7 +396,7 @@ public class HelloApplication extends Application {
             System.out.println("Task Incomplete");
         }
     }
-    private void deleteTask(int TaskID){
+    private static void deleteTask(int TaskID){
         String jdbcUrl = "jdbc:mysql://localhost:3306/to_do_list_db";
         String username = "root";
         String password = "somanysqls";
