@@ -10,6 +10,8 @@ import javafx.stage.Stage;
 import java.sql.*;
 
 import java.net.URL;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class HelloApplication extends Application {
@@ -190,6 +192,8 @@ public class HelloApplication extends Application {
         TextField taskDescriptionField = new TextField();
         Label dueDateLabel = new Label("What is the due date of task completion(YYYY-MM-DD):");
         TextField dueDateField = new TextField();
+        Label dueTimeLabel = new Label("What is the due time of task completion(optional):");
+        TextField dueTimeField = new TextField();
         Button backButton = new Button("❮");
         Button addTaskButton = new Button("Add Task");
 
@@ -200,11 +204,13 @@ public class HelloApplication extends Application {
         taskDescriptionLabel.getStyleClass().add("label");
         dueDateLabel.getStyleClass().add("label");
         dueDateField.getStyleClass().add("field");
+        dueTimeLabel.getStyleClass().add("label");
+        dueTimeField.getStyleClass().add("field");
         backButton.getStyleClass().add("button_blue");
         addTaskButton.getStyleClass().add("button_blue");
 
         // Add components to the VBox
-        root.getChildren().addAll(titleLabel, titleField, taskDescriptionLabel, taskDescriptionField, dueDateLabel, dueDateField, addTaskButton, backButton);
+        root.getChildren().addAll(titleLabel, titleField, taskDescriptionLabel, taskDescriptionField, dueDateLabel, dueDateField, dueTimeLabel, dueTimeField, addTaskButton, backButton);
 
         // Create the scene and apply styles
         Scene scene = new Scene(root, 600, 400);
@@ -218,6 +224,7 @@ public class HelloApplication extends Application {
             String a = taskDescriptionField.getText();
             String b = titleField.getText();
             String c = dueDateField.getText();
+            String d = dueTimeField.getText();
 
             // Generate a random TaskID
             int randomTaskID = Math.abs(UUID.randomUUID().hashCode());
@@ -225,12 +232,22 @@ public class HelloApplication extends Application {
             // Establish a connection
             try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
                 // Create a PreparedStatement
-                String createTableSQL = "INSERT INTO task_details (taskID, title, description, date, Completed) VALUES (?, ?, ?, ?, false)";
+                String createTableSQL = "INSERT INTO task_details (taskID, title, description, date, Completed, time) VALUES (?, ?, ?, ?, false, ?)";
                 try (PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL)) {
                     preparedStatement.setInt(1, randomTaskID);
                     preparedStatement.setString(2, b);
                     preparedStatement.setString(3, a);
                     preparedStatement.setString(4, c);
+
+                    // Check if due time is provided
+                    if (!d.isEmpty()) {
+                        // Parse the due time and set it using setTime
+                        LocalTime dueTime = LocalTime.parse(d);
+                        preparedStatement.setTime(5, java.sql.Time.valueOf(dueTime));
+                    } else {
+                        // If no due time is provided, set it to null in the database
+                        preparedStatement.setNull(5, Types.TIME);
+                    }
 
                     preparedStatement.executeUpdate();
                     System.out.println("Task added successfully.");
