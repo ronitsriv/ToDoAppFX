@@ -3,21 +3,19 @@ package com.example.todoappfx;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 // Made this comment to check if committing to the main rep works or not -RJ
 import java.sql.*;
 
 import java.net.URL;
+import java.util.UUID;
 
 public class HelloApplication extends Application {
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("To Do List");
+        primaryStage.setTitle("To-Do List");
 
         //displayTasks(primaryStage);
         displayEnterTaskScreen(primaryStage);
@@ -221,14 +219,18 @@ public class HelloApplication extends Application {
             String b = titleField.getText();
             String c = dueDateField.getText();
 
+            // Generate a random TaskID
+            int randomTaskID = Math.abs(UUID.randomUUID().hashCode());
+
             // Establish a connection
             try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
                 // Create a PreparedStatement
-                String createTableSQL = "INSERT INTO task_details (title, description, date, Completed) VALUES (?, ?, ?, false)";
+                String createTableSQL = "INSERT INTO task_details (taskID, title, description, date, Completed) VALUES (?, ?, ?, ?, false)";
                 try (PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL)) {
-                    preparedStatement.setString(1, b);
-                    preparedStatement.setString(2, a);
-                    preparedStatement.setString(3, c);
+                    preparedStatement.setInt(1, randomTaskID);
+                    preparedStatement.setString(2, b);
+                    preparedStatement.setString(3, a);
+                    preparedStatement.setString(4, c);
 
                     preparedStatement.executeUpdate();
                     System.out.println("Task added successfully.");
@@ -248,6 +250,54 @@ public class HelloApplication extends Application {
         primaryStage.show();
     }
 
+    //to check if task is completed or not using the checkbox
+    private static void completedOrNot(int TaskID, CheckBox checkBox){
+
+        // JDBC URL, username, and password of MySQL server
+        String jdbcUrl = "jdbc:mysql://localhost:3306/to_do_list_db";
+        String username = "root";
+        String password = "somanysqls";
+
+
+        if (checkBox.isSelected()) {
+            // Establish a connection
+            try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
+                // Create a PreparedStatement
+                String createTableSQL = "UPDATE task_details\n" +
+                        "SET Completed = true\n" +
+                        "WHERE taskID = " + TaskID;
+                try (PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL)) {
+                    preparedStatement.executeUpdate();
+                    System.out.println("Task added successfully.");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    // Handle the SQL exception (e.g., log an error or show a message to the user)
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                // Handle the SQL exception (e.g., log an error or show a message to the user)
+            }
+            System.out.println("Task with TaskID" + TaskID + "Completed");
+        } else {
+            try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
+                // Create a PreparedStatement
+                String createTableSQL = "UPDATE task_details\n" +
+                        "SET Completed = false\n" +
+                        "WHERE taskID = " + TaskID;
+                try (PreparedStatement preparedStatement = connection.prepareStatement(createTableSQL)) {
+                    preparedStatement.executeUpdate();
+                    System.out.println("Task added successfully.");
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    // Handle the SQL exception (e.g., log an error or show a message to the user)
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                // Handle the SQL exception (e.g., log an error or show a message to the user)
+            }
+            System.out.println("Task Incomplete");
+        }
+    }
 
     public static void main(String[] args) {
         // Load the MySQL JDBC driver
