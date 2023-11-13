@@ -336,10 +336,7 @@ public class HelloApplication extends Application {
         }
     }
     public static void main(String[] args) {
-        // Load the MySQL JDBC driver
-
         launch();
-
     }
 
 }

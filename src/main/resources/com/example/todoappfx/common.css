@@ -7,7 +7,7 @@
 
 .label {
     -fx-font-weight:bold;
-    -fx-font-size: 20px; /* Remove the space between value and unit */
+    -fx-font-size: 19px; /* Remove the space between value and unit */
 }
 
 TextField.field {
