@@ -291,7 +291,7 @@ public class TheTaskApp extends Application {
         // JDBC URL, username, and password of MySQL server
         String jdbcUrl = "jdbc:mysql://localhost:3306/newschema";
         String username = "root";
-        String password = "somanysqls";
+        String password = "";//Add your MySQL password here
 
         VBox root = new VBox(10);
         root.setPadding(new Insets(15));
@@ -382,7 +382,7 @@ public class TheTaskApp extends Application {
     private static void completedOrNot(int taskID, CheckBox checkBox) {
         String jdbcUrl = "jdbc:mysql://localhost:3306/newschema";
         String username = "root";
-        String password = "somanysqls";
+        String password = "";//Add your MySQL password here
 
         int completedValue = checkBox.isSelected() ? 1 : 0;
 
@@ -407,7 +407,7 @@ public class TheTaskApp extends Application {
     private static void deleteTask(int taskID) {
         String jdbcUrl = "jdbc:mysql://localhost:3306/newschema";
         String username = "root";
-        String password = "somanysqls";
+        String password = "";//Add your MySQL password here
 
         try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
             // Create a PreparedStatement
