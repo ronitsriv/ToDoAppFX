@@ -5,7 +5,7 @@ How to run the app?
   
 2) Have the MySQL driver for JDBC downloaded and copy-pasted in the path of src/lib.
 
-3) Make a database called 'newschema' using the code:
+3) Make a database called 'newschema' in the MySQL application using the code:
 
    create database newschema;
    
